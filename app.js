@@ -75,6 +75,17 @@ app.post('/articles', async (req, res) => {
   }
 });
 
+app.delete('/articles', async (req, res) => {
+  try {
+    await Article.deleteMany();
+    logger.info('Successfully deleted all articles');
+    res.send('Successfully deleted all articles');
+  } catch (error) {
+    logger.error(`Error occurred while attempting to delete the articles: ${error.message}`);
+    res.status(500).json({ error: 'Failed to delete the articles' });
+  }
+});
+
 app.listen(port, () => {
   logger.info(`Server started on port ${port}`);
 });
