@@ -106,7 +106,7 @@ app.route('/articles/:title')
 
   .put(async (req, res) => {
     try {
-      const { title, content } = req.body; // Validate input data
+      const { title, content } = req.body;
       const filter = { title: req.params.title }; // Filter condition
       const update = { title, content }; // Updated fields
 
@@ -124,7 +124,26 @@ app.route('/articles/:title')
       res.status(500).json({ error: 'Internal Server Error' });
     }
   })
-  .patch()
+
+  .patch(async (req, res) => {
+    try {
+      const filter = { title: req.params.title }; // Filter condition
+      const update = { $set: req.body }; // Updated fields
+
+      const updatedArticle = await Article.findOneAndUpdate(filter, update);
+
+      if (updatedArticle) {
+        logger.info('Article updated successfully');
+        res.status(200).json({ message: 'Article updated successfully' });
+      } else {
+        logger.error(`${req.params.title} article was not found`);
+        res.status(404).json({ error: 'No articles found' });
+      }
+    } catch (error) {
+      logger.error('Failed to retrieve and update the article:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  })
   .delete();
 
 app.listen(port, () => {
