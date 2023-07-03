@@ -48,16 +48,6 @@ const articleSchema = new mongoose.Schema({
 const Article = mongoose.model('Article', articleSchema);
 
 // Route Handlers
-app.get('/test', (req, res, next) => {
-  try {
-    // Simulate an error
-    throw new Error('This is a test error');
-    // ... other code ...
-  } catch (error) {
-    next(error); // Pass the error to the error handling middleware
-  }
-});
-
 app.route('/articles')
 
   .get(async (req, res, next) => {
