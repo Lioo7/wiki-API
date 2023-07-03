@@ -44,6 +44,7 @@ const articleSchema = new mongoose.Schema({
 const Article = mongoose.model('Article', articleSchema);
 
 app.route('/articles')
+
   .get(async (req, res) => {
     try {
       const articles = await Article.find();
@@ -59,6 +60,7 @@ app.route('/articles')
       res.status(500).send('Internal Server Error');
     }
   })
+
   .post(async (req, res) => {
     try {
       const newArticle = new Article({
@@ -73,6 +75,7 @@ app.route('/articles')
       res.status(500).json({ error: 'Failed to save the article' });
     }
   })
+
   .delete(async (req, res) => {
     try {
       await Article.deleteMany();
@@ -83,6 +86,46 @@ app.route('/articles')
       res.status(500).json({ error: 'Failed to delete the articles' });
     }
   });
+
+app.route('/articles/:title')
+  .get(async (req, res) => {
+    try {
+      const foundArticle = await Article.findOne({ title: req.params.title });
+      if (foundArticle) {
+        logger.info('Article found');
+        res.send(foundArticle);
+      } else {
+        logger.error(`${req.params.title} article was not found`);
+        res.status(404).send('No articles found');
+      }
+    } catch (error) {
+      logger.error('Failed to retrieve the article:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  })
+
+  .put(async (req, res) => {
+    try {
+      const { title, content } = req.body; // Validate input data
+      const filter = { title: req.params.title }; // Filter condition
+      const update = { title, content }; // Updated fields
+
+      const updatedArticle = await Article.replaceOne(filter, update);
+
+      if (updatedArticle.modifiedCount > 0) {
+        logger.info('Article updated successfully');
+        res.status(200).json({ message: 'Article updated successfully' });
+      } else {
+        logger.error(`${req.params.title} article was not found`);
+        res.status(404).json({ error: 'No articles found' });
+      }
+    } catch (error) {
+      logger.error('Failed to retrieve and update the article:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  })
+  .patch()
+  .delete();
 
 app.listen(port, () => {
   logger.info(`Server started on port ${port}`);
