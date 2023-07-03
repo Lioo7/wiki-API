@@ -43,9 +43,10 @@ const articleSchema = new mongoose.Schema({
 
 const Article = mongoose.model('Article', articleSchema);
 
-app.get('/articles', (req, res) => {
-  Article.find()
-    .then((articles) => {
+app.route('/articles')
+  .get(async (req, res) => {
+    try {
+      const articles = await Article.find();
       if (articles.length > 0) {
         logger.info('Article found');
         res.send(articles);
@@ -53,38 +54,35 @@ app.get('/articles', (req, res) => {
         logger.error('No articles found');
         res.status(404).send('No articles found');
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       logger.error('Failed to retrieve articles:', error);
       res.status(500).send('Internal Server Error');
-    });
-});
-
-app.post('/articles', async (req, res) => {
-  try {
-    const newArticle = new Article({
-      title: req.body.title,
-      content: req.body.content,
-    });
-    const article = await newArticle.save();
-    logger.info(`Article: ${article} saved successfully`);
-    res.status(200).json({ message: 'Article saved successfully' });
-  } catch (error) {
-    logger.error(`Error occurred while attempting to save the article: ${error.message}`);
-    res.status(500).json({ error: 'Failed to save the article' });
-  }
-});
-
-app.delete('/articles', async (req, res) => {
-  try {
-    await Article.deleteMany();
-    logger.info('Successfully deleted all articles');
-    res.send('Successfully deleted all articles');
-  } catch (error) {
-    logger.error(`Error occurred while attempting to delete the articles: ${error.message}`);
-    res.status(500).json({ error: 'Failed to delete the articles' });
-  }
-});
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      const newArticle = new Article({
+        title: req.body.title,
+        content: req.body.content,
+      });
+      const article = await newArticle.save();
+      logger.info(`Article: ${article} saved successfully`);
+      res.status(200).json({ message: 'Article saved successfully' });
+    } catch (error) {
+      logger.error(`Error occurred while attempting to save the article: ${error.message}`);
+      res.status(500).json({ error: 'Failed to save the article' });
+    }
+  })
+  .delete(async (req, res) => {
+    try {
+      await Article.deleteMany();
+      logger.info('Successfully deleted all articles');
+      res.send('Successfully deleted all articles');
+    } catch (error) {
+      logger.error(`Error occurred while attempting to delete the articles: ${error.message}`);
+      res.status(500).json({ error: 'Failed to delete the articles' });
+    }
+  });
 
 app.listen(port, () => {
   logger.info(`Server started on port ${port}`);
